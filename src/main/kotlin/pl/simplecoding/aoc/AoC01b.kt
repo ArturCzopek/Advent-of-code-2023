@@ -38,34 +38,40 @@ val NUMBERS = mapOf(
     "9" to 9,
 )
 
-fun main() {
-    val fileContent = AoCUtils.getFile("aoc01b.txt")
-    val fullCalibrationValue = fileContent.lines()
-        .map { getLineCalibrationValue(it) }
-        .reduce { acc, value -> acc + value }
-    println(fullCalibrationValue)
 
+fun main(args: Array<String>) {
+    val fileContent = AoCUtils.getFile(if (args.isNotEmpty()) args[0] else "aoc01b.txt")
+    AoC01b.solve(fileContent)
 }
 
-private fun getLineCalibrationValue(line: String): Int {
-    val digits = getDigits(line)
-    return digits.first() * 10 + digits.last()
-}
-
-fun getDigits(line: String): List<Int> {
-    val indexToNumber = mutableMapOf<Int, Int>()
-
-    NUMBERS.forEach { (key, value) ->
-        var index = -1
-        do {
-            index = line.indexOf(key, index + 1)
-            if (index != -1) {
-                indexToNumber[index] = value
-            }
-        } while (index != -1)
+object AoC01b {
+    fun solve(fileContent: String): Int {
+        val fullCalibrationValue = fileContent.lines()
+            .map { getLineCalibrationValue(it) }
+            .reduce { acc, value -> acc + value }
+        return fullCalibrationValue.also { println(it) }
     }
 
-    return indexToNumber
-        .toSortedMap()
-        .map { it.value }
+    private fun getLineCalibrationValue(line: String): Int {
+        val digits = getDigits(line)
+        return digits.first() * 10 + digits.last()
+    }
+
+    private fun getDigits(line: String): List<Int> {
+        val indexToNumber = mutableMapOf<Int, Int>()
+
+        NUMBERS.forEach { (key, value) ->
+            var index = -1
+            do {
+                index = line.indexOf(key, index + 1)
+                if (index != -1) {
+                    indexToNumber[index] = value
+                }
+            } while (index != -1)
+        }
+
+        return indexToNumber
+            .toSortedMap()
+            .map { it.value }
+    }
 }

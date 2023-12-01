@@ -25,16 +25,21 @@ package pl.simplecoding.aoc
 //Consider your entire calibration document. What is the sum of all of the calibration values?
 //
 
-fun main() {
-    val fileContent = AoCUtils.getFile("aoc01a.txt")
-    val fullCalibrationValue = fileContent.lines()
-        .map { getLineCalibrationValue(it) }
-        .reduce { acc, value -> acc + value }
-    println(fullCalibrationValue)
-
+fun main(args: Array<String>) {
+    val fileContent = AoCUtils.getFile(if (args.isNotEmpty()) args[0] else "aoc01a.txt")
+    AoC01a.solve(fileContent)
 }
 
-private fun getLineCalibrationValue(line: String): Int {
-    val digits = line.filter { it.isDigit() }
-    return digits.first().digitToInt() * 10 + digits.last().digitToInt()
+object AoC01a {
+    fun solve(fileContent: String): Int {
+        val fullCalibrationValue = fileContent.lines()
+            .map { getLineCalibrationValue(it) }
+            .reduce { acc, value -> acc + value }
+        return fullCalibrationValue.also { println(it) }
+    }
+
+    private fun getLineCalibrationValue(line: String): Int {
+        val digits = line.filter { it.isDigit() }
+        return digits.first().digitToInt() * 10 + digits.last().digitToInt()
+    }
 }
