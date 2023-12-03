@@ -31,12 +31,9 @@ fun main(args: Array<String>) {
 }
 
 object AoC01a {
-    fun solve(fileContent: String): Int {
-        val fullCalibrationValue = fileContent.lines()
-            .map { getLineCalibrationValue(it) }
-            .reduce { acc, value -> acc + value }
-        return fullCalibrationValue.also { println(it) }
-    }
+    fun solve(fileContent: String) = fileContent.lines()
+        .sumOf { getLineCalibrationValue(it) }
+        .also { println(it) }
 
     private fun getLineCalibrationValue(line: String): Int {
         val digits = line.filter { it.isDigit() }

@@ -41,8 +41,7 @@ object AoC02a {
         return fileContent.lines()
             .map { toGame(it) }
             .filter { isValidWithRules(it, gameRule) }
-            .map { it.id }
-            .reduce { acc, value -> acc + value }
+            .sumOf { it.id }
     }
 
     private fun toGame(line: String): Game {

@@ -21,12 +21,9 @@ object AoC03a {
                         getSignsOnly(lineEntry.value),
                         getSignsOnly(symbolsLines[lineEntry.key + 1])
                     )
-                }
-                .map { it.value }
-                .reduceOrNull { acc, value -> acc + value }
+                }.sumOf { it.value }
         }
-            .filterNotNull()
-            .reduce { acc, value -> acc + value }
+            .sum()
     }
 
     private fun getSignsOnly(symbolsLine: List<Symbol<*>>?) = symbolsLine?.filterIsInstance<Sign>() ?: listOf()

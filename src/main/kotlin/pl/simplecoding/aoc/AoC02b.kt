@@ -33,8 +33,7 @@ object AoC02b {
         return fileContent.lines()
             .map { toGame(it) }
             .map { getMaxGameSet(it.gameSets) }
-            .map { it.power() }
-            .reduce { acc, value -> acc + value }
+            .sumOf { it.power() }
     }
 
     private fun toGame(line: String): Game {
