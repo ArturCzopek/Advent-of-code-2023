@@ -88,21 +88,22 @@ object AoC03a {
 
         return symbols
     }
+
+    open class Symbol<T>(
+        open val value: T,
+        open val firstIndex: Int,
+        open val lastIndex: Int
+    )
+
+    data class Number(
+        override val value: Int,
+        override val firstIndex: Int,
+        override val lastIndex: Int
+    ) : Symbol<Int>(value, firstIndex, lastIndex)
+
+    data class Sign(
+        override val value: Char,
+        override val firstIndex: Int
+    ) : Symbol<Char>(value, firstIndex, firstIndex)
 }
 
-open class Symbol<T>(
-    open val value: T,
-    open val firstIndex: Int,
-    open val lastIndex: Int
-)
-
-data class Number(
-    override val value: Int,
-    override val firstIndex: Int,
-    override val lastIndex: Int
-) : Symbol<Int>(value, firstIndex, lastIndex)
-
-data class Sign(
-    override val value: Char,
-    override val firstIndex: Int
-) : Symbol<Char>(value, firstIndex, firstIndex)
