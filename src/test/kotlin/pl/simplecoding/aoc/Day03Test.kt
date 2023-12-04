@@ -2,12 +2,12 @@ package pl.simplecoding.aoc
 
 import org.junit.jupiter.api.Test
 
-class AoC03bTest {
+class Day03Test {
 
     @Test
     fun `should solve quiz`() {
         // given
-        val fileContent = """
+        val input = """
             467..114..
             ...*......
             ..35..633.
@@ -20,8 +20,12 @@ class AoC03bTest {
             .664.598..
         """.trimIndent()
 
-        val result = AoC03b.solve(fileContent)
+        //when
+        val resultA = Day03a.solve(input.lines())
+        val resultB = Day03b.solve(input.lines())
 
-        assert(467835L == result)
+        // then
+        assert(4361L == resultA)
+        assert(467835L == resultB)
     }
 }
