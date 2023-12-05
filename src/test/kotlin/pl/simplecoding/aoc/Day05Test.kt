@@ -45,10 +45,10 @@ class Day05Test {
 
         // when
         val resultA = Day05a.solve(input.lines())
-//        val resultB = Day05b.solve(input.lines())
+        val resultB = Day05b.solve(input.lines())
 
         // then
         assert(35L == resultA)
-//        assert(30L == resultB)
+        assert(46L == resultB)
     }
 }
