@@ -1,135 +1,138 @@
 package pl.simplecoding.aoc
 
 
+const val JOKER = 'J'
+const val MAX_CARDS = 5
+val cardsInOrder = listOf(JOKER, '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
+
 fun main() {
     Day07a.solve(readInput("Day07")).println()
-//    Day07b.solve(readInput("Day07")).println()
+    Day07b.solve(readInput("Day07")).println()
 }
 
-val cardsInOrder = listOf('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
-
 abstract class Day07 {
+    abstract val isJoker: Boolean
 
-    abstract fun solve(input: List<String>): Long
+    fun solve(input: List<String>) = parseHands(input).map {
+        ComboWithHand(
+            combo = findCombo(it.cards, isJoker), hand = it
+        )
+    }.sortedWith(ComboWithHandComparator())
+        .mapIndexed { idx, comboWithHand -> (input.size - idx) to comboWithHand.hand.bid }
+        .sumOf { it.first * it.second }.toLong()
 
-    fun parseHands(input: List<String>) = input.map {
+    private fun parseHands(input: List<String>) = input.map {
         val parts = it.split(" ")
         Hand(parts[0], parts[1].toInt())
     }
 }
 
 object Day07a : Day07() {
-    override fun solve(input: List<String>) = parseHands(input)
-        .map {
-            ComboWithHand(
-                combo = findCombo(it.cards),
-                hand = it
-            )
-        }
-        .sortedWith(ComboWithHandComparator())
-        .mapIndexed { idx, comboWithHand -> (input.size - idx) to comboWithHand.hand.bid }
-        .sumOf { it.first * it.second }
-        .toLong()
+    override val isJoker get() = false
 }
 
-fun findCombo(cards: String) = when {
-    FiveOfKind.valid(cards) -> FiveOfKind
-    FourOfKind.valid(cards) -> FourOfKind
-    FullHouse.valid(cards) -> FullHouse
-    ThreeOfKind.valid(cards) -> ThreeOfKind
-    TwoPair.valid(cards) -> TwoPair
-    OnePair.valid(cards) -> OnePair
-    HighCard.valid(cards) -> HighCard
-    else -> None
+object Day07b : Day07() {
+    override val isJoker get() = true
+}
+
+
+fun findCombo(cards: String, withJoker: Boolean): Combo = try {
+    when {
+        FiveOfKind.valid(cards, withJoker) -> FiveOfKind
+        FourOfKind.valid(cards, withJoker) -> FourOfKind
+        FullHouse.valid(cards, withJoker) -> FullHouse
+        ThreeOfKind.valid(cards, withJoker) -> ThreeOfKind
+        TwoPair.valid(cards, withJoker) -> TwoPair
+        OnePair.valid(cards, withJoker) -> OnePair
+        HighCard.valid(cards, withJoker) -> HighCard
+        else -> None
+    }
+} catch (ex: Exception) {
+    println(cards)
+    throw ex
 }
 
 data class Hand(
-    val cards: String,
-    val bid: Int
+    val cards: String, val bid: Int
 )
 
 
-sealed class Combo(val order: Int, private val condition: (String) -> Boolean) {
-    fun valid(cards: String) = condition.invoke(cards)
+sealed class Combo(val order: Int, private val condition: (String, Boolean) -> Boolean) {
+    fun valid(cards: String, withJoker: Boolean) = condition.invoke(cards, withJoker)
+
 }
 
 class ComboComparator : Comparator<Combo> {
     override fun compare(combo1: Combo, combo2: Combo) = combo1.order - combo2.order
 }
 
-data object FiveOfKind : Combo(
-    1,
-    {
-        val firstChar = it[0]
-        it.count { char -> char == firstChar } == 5
-    }
-)
+fun matchJoker(withJoker: Boolean, char: Char) = (if (withJoker) char != JOKER else true)
 
-data object FourOfKind : Combo(
-    2,
-    {
-        val firstChar = it[0]
-        val secondChar = it[1]
-        it.count { char -> char == firstChar } == 4 ||
-                it.count { char -> char == secondChar } == 4
-    }
-)
 
-data object FullHouse : Combo(
-    3,
-    {
-        val firstChar = it[0]
-        val secondChar = it.first { other -> other != firstChar }
-        (it.count { char -> char == firstChar } == 3 && it.count { char -> char == secondChar } == 2) ||
-                (it.count { char -> char == firstChar } == 2 && it.count { char -> char == secondChar } == 3)
+data object FiveOfKind : Combo(1, { cards, withJoker ->
+    val jokers = if (withJoker) cards.count { it == JOKER } else 0
+    if (jokers >= 4) {
+        true
+    } else {
+        val firstChar = cards.first { it != JOKER }
+        cards.count { it == firstChar } == MAX_CARDS || (withJoker && cards.all { it == firstChar || it == JOKER })
     }
-)
+})
 
-data object ThreeOfKind : Combo(
-    4,
-    {
-        val firstChar = it[0]
-        val secondChar = it.first { other -> other != firstChar }
-        val thirdChar = it.first { other -> other != firstChar && other != secondChar }
-        it.count { char -> char == firstChar } == 3 ||
-                it.count { char -> char == secondChar } == 3 ||
-                it.count { char -> char == thirdChar } == 3
+data object FourOfKind : Combo(2, { cards, withJoker ->
+    val jokers = if (withJoker) cards.count { it == JOKER } else 0
+    if (jokers >= 3) {
+        true
+    } else {
+        val firstChar = cards.first { if (withJoker) it != JOKER else true }
+        val secondChar = cards.first { it != firstChar && matchJoker(withJoker, it) }
+        cards.count { it == firstChar } + jokers == 4 || cards.count { it == secondChar } + jokers == 4
     }
-)
+})
 
-data object TwoPair : Combo(
-    5,
-    {
+data object FullHouse : Combo(3, { cards, withJoker ->
+    val firstChar = cards.first { if (withJoker) it != JOKER else true }
+    val secondChar = cards.first { it != firstChar && matchJoker(withJoker, it) }
+    cards.all { it == firstChar || it == secondChar || (if (withJoker) it == JOKER else false) }
+})
+
+data object ThreeOfKind : Combo(4, { cards, withJoker ->
+    val jokers = if (withJoker) cards.count { it == JOKER } else 0
+    if (jokers >= 2) {
+        true
+    } else {
+        val firstChar = cards.first { if (withJoker) it != JOKER else true }
+        val secondChar = cards.first { it != firstChar && matchJoker(withJoker, it) }
+        val thirdChar = cards.first { it != firstChar && it != secondChar && matchJoker(withJoker, it) }
+        cards.count { char -> char == firstChar } + jokers == 3 || cards.count { char -> char == secondChar } + jokers == 3 || cards.count { char -> char == thirdChar } + jokers == 3
+    }
+})
+
+
+data object TwoPair : Combo(5, { cards, withJoker ->
+    val charSet = HashSet<Char>()
+    cards.forEach { char -> charSet.add(char) }
+    charSet.size == 3 || (charSet.size == 4 && withJoker && cards.any { it == JOKER })
+})
+
+data object OnePair : Combo(6, { cards, withJoker ->
+    if (withJoker && cards.any { it == JOKER }) {
+        true
+    } else {
         val charSet = HashSet<Char>()
-        it.forEach { char -> charSet.add(char) }
-        charSet.size == 3// if there are two pairs and 3 of pair already checked then only combo is 2 + 1 + 2 so all cards checked
-    }
-)
-
-data object OnePair : Combo(
-    6,
-    {
-        val charSet = HashSet<Char>()
-        it.forEach { char -> charSet.add(char) }
+        cards.forEach { char -> charSet.add(char) }
         charSet.size == 4
     }
-)
+})
 
-data object HighCard : Combo(
-    7,
-    {
-        (0..3).all { idx -> cardsInOrder.indexOf(it[idx]) < cardsInOrder.indexOf(it[idx + 1]) }
-    }
-)
+data object HighCard : Combo(7, { cards, _ ->
+    (0..3).all { idx -> cardsInOrder.indexOf(cards[idx]) < cardsInOrder.indexOf(cards[idx + 1]) }
+})
 
-data object None : Combo(
-    8,
-    { true }
-)
+data object None : Combo(8, { _, _ -> true })
 
 data class ComboWithHand(
-    val combo: Combo,
-    val hand: Hand
+    val combo: Combo, val hand: Hand
 ) {
     fun mapCardsToScores() = hand.cards.map { cardsInOrder.indexOf(it) }
 }
@@ -143,7 +146,7 @@ class ComboWithHandComparator : Comparator<ComboWithHand> {
 
         val cards1Scores = comboWithHand1.mapCardsToScores()
         val cards2Scores = comboWithHand2.mapCardsToScores()
-        (0..4).forEach {
+        (0..<MAX_CARDS).forEach {
             val cardScoreCompare = cards2Scores[it] - cards1Scores[it]
             if (cardScoreCompare != 0) {
                 return cardScoreCompare

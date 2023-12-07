@@ -17,10 +17,10 @@ class Day07Test {
 
         // when
         val resultA = Day07a.solve(input.lines())
-//        val resultB = Day07b.solve(input.lines())
+        val resultB = Day07b.solve(input.lines())
 
         // then
         assert(6440L == resultA)
-//        assert(71503L == resultB)
+        assert(5905L == resultB)
     }
 }
