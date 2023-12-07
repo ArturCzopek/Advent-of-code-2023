@@ -1,6 +1,5 @@
 package pl.simplecoding.aoc
 
-
 const val JOKER = 'J'
 const val MAX_CARDS = 5
 val cardsInOrder = listOf(JOKER, '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
@@ -13,13 +12,12 @@ fun main() {
 abstract class Day07 {
     abstract val isJoker: Boolean
 
-    fun solve(input: List<String>) = parseHands(input).map {
-        ComboWithHand(
-            combo = findCombo(it.cards, isJoker), hand = it
-        )
-    }.sortedWith(ComboWithHandComparator())
+    fun solve(input: List<String>) = parseHands(input)
+        .map { ComboWithHand(findCombo(it.cards, isJoker), it) }
+        .sortedWith(ComboWithHandComparator())
         .mapIndexed { idx, comboWithHand -> (input.size - idx) to comboWithHand.hand.bid }
-        .sumOf { it.first * it.second }.toLong()
+        .sumOf { it.first * it.second }
+        .toLong()
 
     private fun parseHands(input: List<String>) = input.map {
         val parts = it.split(" ")
@@ -35,31 +33,21 @@ object Day07b : Day07() {
     override val isJoker get() = true
 }
 
-
-fun findCombo(cards: String, withJoker: Boolean): Combo = try {
-    when {
-        FiveOfKind.valid(cards, withJoker) -> FiveOfKind
-        FourOfKind.valid(cards, withJoker) -> FourOfKind
-        FullHouse.valid(cards, withJoker) -> FullHouse
-        ThreeOfKind.valid(cards, withJoker) -> ThreeOfKind
-        TwoPair.valid(cards, withJoker) -> TwoPair
-        OnePair.valid(cards, withJoker) -> OnePair
-        HighCard.valid(cards, withJoker) -> HighCard
-        else -> None
-    }
-} catch (ex: Exception) {
-    println(cards)
-    throw ex
+fun findCombo(cards: String, withJoker: Boolean) = when {
+    FiveOfKind.valid(cards, withJoker) -> FiveOfKind
+    FourOfKind.valid(cards, withJoker) -> FourOfKind
+    FullHouse.valid(cards, withJoker) -> FullHouse
+    ThreeOfKind.valid(cards, withJoker) -> ThreeOfKind
+    TwoPair.valid(cards, withJoker) -> TwoPair
+    OnePair.valid(cards, withJoker) -> OnePair
+    HighCard.valid(cards, withJoker) -> HighCard
+    else -> None
 }
 
-data class Hand(
-    val cards: String, val bid: Int
-)
-
+data class Hand(val cards: String, val bid: Int)
 
 sealed class Combo(val order: Int, private val condition: (String, Boolean) -> Boolean) {
     fun valid(cards: String, withJoker: Boolean) = condition.invoke(cards, withJoker)
-
 }
 
 class ComboComparator : Comparator<Combo> {
@@ -67,7 +55,6 @@ class ComboComparator : Comparator<Combo> {
 }
 
 fun matchJoker(withJoker: Boolean, char: Char) = (if (withJoker) char != JOKER else true)
-
 
 data object FiveOfKind : Combo(1, { cards, withJoker ->
     val jokers = if (withJoker) cards.count { it == JOKER } else 0
@@ -108,7 +95,6 @@ data object ThreeOfKind : Combo(4, { cards, withJoker ->
     }
 })
 
-
 data object TwoPair : Combo(5, { cards, withJoker ->
     val charSet = HashSet<Char>()
     cards.forEach { char -> charSet.add(char) }
@@ -131,9 +117,7 @@ data object HighCard : Combo(7, { cards, _ ->
 
 data object None : Combo(8, { _, _ -> true })
 
-data class ComboWithHand(
-    val combo: Combo, val hand: Hand
-) {
+data class ComboWithHand(val combo: Combo, val hand: Hand) {
     fun mapCardsToScores() = hand.cards.map { cardsInOrder.indexOf(it) }
 }
 
