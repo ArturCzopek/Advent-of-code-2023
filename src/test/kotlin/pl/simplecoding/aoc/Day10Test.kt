@@ -36,11 +36,11 @@ class Day10Test {
         """.trimIndent()
 
         val inputB2 = """
-            FF7FSF7F7F7F7F7F---7
+            FF7F7F7F7F7F7F7F---7
             L|LJ||||||||||||F--J
             FL-7LJLJ||||||LJL-77
             F--JF--7||LJLJ7F7FJ-
-            L---JF-JLJ.||-FJLJJ7
+            L---JF-JLS.||-FJLJJ7
             |F|F-JF---7F7-L7L|7|
             |FFJF7L7F-JF7|JL---7
             7-L-JL7||F7|L7F-7F7|
@@ -49,14 +49,14 @@ class Day10Test {
         """.trimIndent()
 
         // when
-//        val resultA1 = Day10a.solve(inputA1.lines())
-//        val resultA2 = Day10a.solve(inputA2.lines())
+        val resultA1 = Day10a.solve(inputA1.lines())
+        val resultA2 = Day10a.solve(inputA2.lines())
         val resultB1 = Day10b.solve(inputB1.lines())
         val resultB2 = Day10b.solve(inputB2.lines())
 
         // then
-//        assert(4L == resultA1)
-//        assert(8L == resultA2)
+        assert(4L == resultA1)
+        assert(8L == resultA2)
         assert(4L == resultB1)
         assert(10L == resultB2)
     }

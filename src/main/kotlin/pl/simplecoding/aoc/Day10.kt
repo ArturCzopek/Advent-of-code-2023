@@ -50,17 +50,17 @@ object Day10b : Day10() {
         this.rows
             .map { row -> row.filter { it.rangePipe && it.loopPipe } }
             .sumOf { row ->
-            (0..<(row.size - 1) step 2)
-                .map { row[it].coords to row[it + 1].coords } // ranges
-                .sumOf { range ->
-                    val startX = range.first.x
-                    val endX = range.second.x
-                    val y = range.first.y
-                    (startX..endX)
-                        .map { this[Coordinates(it, y)] }
-                        .count { !it.loopPipe }
-                }
-        }.toLong()
+                (0..<(row.size - 1) step 2)
+                    .map { row[it].coords to row[it + 1].coords } // ranges
+                    .sumOf { range ->
+                        val startX = range.first.x
+                        val endX = range.second.x
+                        val y = range.first.y
+                        (startX..endX)
+                            .map { this[Coordinates(it, y)] }
+                            .count { !it.loopPipe }
+                    }
+            }.toLong()
     }
 }
 
@@ -284,8 +284,29 @@ class StartPipe(
         val leftCoord = Coordinates(current.x - 1, current.y)
         val upCoord = Coordinates(current.x, current.y - 1)
 
-        return (upCoord.isValid() && downCoord.isValid() && pipeMap[upCoord].loopPipe && pipeMap[downCoord].loopPipe) ||
-                (downCoord.isValid() && rightCoord.isValid() && pipeMap[downCoord].loopPipe && pipeMap[rightCoord].loopPipe) ||
-                (downCoord.isValid() && leftCoord.isValid() && pipeMap[downCoord].loopPipe && pipeMap[leftCoord].loopPipe)
+        val possibleUpDownConn =
+            upCoord.isValid() && downCoord.isValid() && pipeMap[upCoord].loopPipe && pipeMap[downCoord].loopPipe
+        val possibleDownRightConn =
+            downCoord.isValid() && rightCoord.isValid() && pipeMap[downCoord].loopPipe && pipeMap[rightCoord].loopPipe
+        val possibleDownLeftConn =
+            downCoord.isValid() && leftCoord.isValid() && pipeMap[downCoord].loopPipe && pipeMap[leftCoord].loopPipe
+
+        if (possibleUpDownConn &&
+            pipeMap[upCoord].sign in listOf(Sw90Pipe.sign, VerticalPipe.sign, Se90Pipe.sign) &&
+            pipeMap[downCoord].sign in listOf(Nw90Pipe.sign, VerticalPipe.sign, Ne90Pipe.sign)
+        ) {
+            return true
+        }
+
+        if (possibleDownRightConn &&
+            pipeMap[downCoord].sign in listOf(Nw90Pipe.sign, VerticalPipe.sign, Ne90Pipe.sign) &&
+            pipeMap[rightCoord].sign in listOf(Sw90Pipe.sign, HorizontalPipe.sign, Nw90Pipe.sign)
+        ) {
+            return true
+        }
+
+        return possibleDownLeftConn &&
+                pipeMap[downCoord].sign in listOf(Nw90Pipe.sign, VerticalPipe.sign, Ne90Pipe.sign) &&
+                pipeMap[leftCoord].sign in listOf(Se90Pipe.sign, HorizontalPipe.sign, Ne90Pipe.sign)
     }
 }
