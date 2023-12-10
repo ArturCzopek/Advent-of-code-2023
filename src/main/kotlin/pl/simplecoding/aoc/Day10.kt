@@ -5,6 +5,9 @@ fun main() {
     Day10b.solve(readInput("Day10")).println()
 }
 
+// for further refactoring / development, I would handle distinguishing which directions pipe has. Also, PipeMap should contain this signs instead of chars only
+// for another development, this map might be prettier, not this weird signs
+
 abstract class Day10 {
     abstract fun solve(input: List<String>): Long
 
@@ -51,8 +54,8 @@ object Day10b : Day10() {
             .map { row -> row.filter { it.rangePipe && it.loopPipe } }
             .sumOf { row ->
                 (0..<(row.size - 1) step 2)
-                    .map { row[it].coords to row[it + 1].coords } // ranges
-                    .sumOf { range ->
+                    .map { row[it].coords to row[it + 1].coords } // all ranges
+                    .sumOf { range -> // count non-loop pipes within range
                         val startX = range.first.x
                         val endX = range.second.x
                         val y = range.first.y
@@ -93,7 +96,7 @@ data class Coordinates(
     val x: Int,
     val y: Int
 ) {
-    fun isValid() = x >= 0 && y >= 0
+    fun isValid() = x >= 0 && y >= 0 // south-east boundaries not handled
 }
 
 sealed class Pipe(
@@ -232,7 +235,7 @@ class StartPipe(
 ) : Pipe(
     origin = origin,
     current = current,
-    nextStep = { _, _ -> throw UnsupportedOperationException("No next pipe for start pipe, use #getFirstPipe instead") }
+    nextStep = { _, _ -> throw UnsupportedOperationException("No next pipe for start pipe, use #getNextPipe instead") }
 ) {
     override val isRangePipe: Boolean
         get() = false
@@ -241,31 +244,30 @@ class StartPipe(
         const val sign = 'S'
     }
 
-    // corner case not handled - start point on the border
+    // so much logic for "data" class
+
     override fun getNextPipe(pipeMap: PipeMap): Pipe {
         val rightCoord = Coordinates(current.x + 1, current.y)
-        var firstPipe = when (pipeMap[rightCoord].sign) {
-            HorizontalPipe.sign -> HorizontalPipe(current, rightCoord)
-            Nw90Pipe.sign -> Nw90Pipe(current, rightCoord)
-            Sw90Pipe.sign -> Sw90Pipe(current, rightCoord)
-            else -> null
+        if (rightCoord.isValid()) {
+            when (pipeMap[rightCoord].sign) {
+                HorizontalPipe.sign -> HorizontalPipe(current, rightCoord)
+                Nw90Pipe.sign -> Nw90Pipe(current, rightCoord)
+                Sw90Pipe.sign -> Sw90Pipe(current, rightCoord)
+                else -> null
+            }.let { return this }
         }
 
-        if (firstPipe != null) {
-            return firstPipe
-        }
 
         val downCoord = Coordinates(current.x, current.y + 1)
-        firstPipe = when (pipeMap[downCoord].sign) {
-            VerticalPipe.sign -> VerticalPipe(current, downCoord)
-            Ne90Pipe.sign -> Ne90Pipe(current, downCoord)
-            Nw90Pipe.sign -> Nw90Pipe(current, downCoord)
-            else -> null
+        if (downCoord.isValid()) {
+            when (pipeMap[downCoord].sign) {
+                VerticalPipe.sign -> VerticalPipe(current, downCoord)
+                Ne90Pipe.sign -> Ne90Pipe(current, downCoord)
+                Nw90Pipe.sign -> Nw90Pipe(current, downCoord)
+                else -> null
+            }.let { return this }
         }
 
-        if (firstPipe != null) {
-            return firstPipe
-        }
 
         val leftCoord = Coordinates(current.x - 1, current.y)
         return when (pipeMap[leftCoord].sign) {
@@ -275,7 +277,7 @@ class StartPipe(
             else -> throw IllegalArgumentException("Wrong map provided")
         }
 
-        // start has two connections, three directions to check is enough
+        // start has two connections, three directions to check is enough to determine
     }
 
     fun checkIfRangePipe(pipeMap: PipeMap): Boolean {
