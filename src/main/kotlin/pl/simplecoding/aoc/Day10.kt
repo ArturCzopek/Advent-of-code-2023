@@ -18,7 +18,6 @@ abstract class Day10 {
     internal fun generateFilledInPipeMap(input: List<String>): PipeMap {
         val pipeMap = parseInput(input)
         val startCoord = getStartCoords(pipeMap)
-        pipeMap.setLoopPipe(startCoord)
         var currentPipe: Pipe = StartPipe(startCoord, startCoord)
 
         do {
@@ -53,8 +52,8 @@ object Day10b : Day10() {
         this.rows
             .map { row -> row.filter { it.rangePipe && it.loopPipe } }
             .sumOf { row ->
-                (0..<(row.size - 1) step 2)
-                    .map { row[it].coords to row[it + 1].coords } // all ranges
+                row.chunked(2)
+                    .map { it.first().coords to it.last().coords } // all ranges
                     .sumOf { range -> // count non-loop pipes within range
                         val startX = range.first.x
                         val endX = range.second.x
@@ -248,26 +247,28 @@ class StartPipe(
 
     override fun getNextPipe(pipeMap: PipeMap): Pipe {
         val rightCoord = Coordinates(current.x + 1, current.y)
-        if (rightCoord.isValid()) {
-            when (pipeMap[rightCoord].sign) {
-                HorizontalPipe.sign -> HorizontalPipe(current, rightCoord)
-                Nw90Pipe.sign -> Nw90Pipe(current, rightCoord)
-                Sw90Pipe.sign -> Sw90Pipe(current, rightCoord)
-                else -> null
-            }.let { return this }
+        var firstPipe = when (pipeMap[rightCoord].sign) {
+            HorizontalPipe.sign -> HorizontalPipe(current, rightCoord)
+            Nw90Pipe.sign -> Nw90Pipe(current, rightCoord)
+            Sw90Pipe.sign -> Sw90Pipe(current, rightCoord)
+            else -> null
         }
 
+        if (firstPipe != null) {
+            return firstPipe
+        }
 
         val downCoord = Coordinates(current.x, current.y + 1)
-        if (downCoord.isValid()) {
-            when (pipeMap[downCoord].sign) {
-                VerticalPipe.sign -> VerticalPipe(current, downCoord)
-                Ne90Pipe.sign -> Ne90Pipe(current, downCoord)
-                Nw90Pipe.sign -> Nw90Pipe(current, downCoord)
-                else -> null
-            }.let { return this }
+        firstPipe = when (pipeMap[downCoord].sign) {
+            VerticalPipe.sign -> VerticalPipe(current, downCoord)
+            Ne90Pipe.sign -> Ne90Pipe(current, downCoord)
+            Nw90Pipe.sign -> Nw90Pipe(current, downCoord)
+            else -> null
         }
 
+        if (firstPipe != null) {
+            return firstPipe
+        }
 
         val leftCoord = Coordinates(current.x - 1, current.y)
         return when (pipeMap[leftCoord].sign) {
