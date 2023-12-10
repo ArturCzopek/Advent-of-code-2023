@@ -248,28 +248,26 @@ class StartPipe(
 
     override fun getNextPipe(pipeMap: PipeMap): Pipe {
         val rightCoord = Coordinates(current.x + 1, current.y)
-        var firstPipe = when (pipeMap[rightCoord].sign) {
-            HorizontalPipe.sign -> HorizontalPipe(current, rightCoord)
-            Nw90Pipe.sign -> Nw90Pipe(current, rightCoord)
-            Sw90Pipe.sign -> Sw90Pipe(current, rightCoord)
-            else -> null
+        if (rightCoord.isValid()) {
+            when (pipeMap[rightCoord].sign) {
+                HorizontalPipe.sign -> HorizontalPipe(current, rightCoord)
+                Nw90Pipe.sign -> Nw90Pipe(current, rightCoord)
+                Sw90Pipe.sign -> Sw90Pipe(current, rightCoord)
+                else -> null
+            }.let { return this }
         }
 
-        if (firstPipe != null) {
-            return firstPipe
-        }
 
         val downCoord = Coordinates(current.x, current.y + 1)
-        firstPipe = when (pipeMap[downCoord].sign) {
-            VerticalPipe.sign -> VerticalPipe(current, downCoord)
-            Ne90Pipe.sign -> Ne90Pipe(current, downCoord)
-            Nw90Pipe.sign -> Nw90Pipe(current, downCoord)
-            else -> null
+        if (downCoord.isValid()) {
+            when (pipeMap[downCoord].sign) {
+                VerticalPipe.sign -> VerticalPipe(current, downCoord)
+                Ne90Pipe.sign -> Ne90Pipe(current, downCoord)
+                Nw90Pipe.sign -> Nw90Pipe(current, downCoord)
+                else -> null
+            }.let { return this }
         }
 
-        if (firstPipe != null) {
-            return firstPipe
-        }
 
         val leftCoord = Coordinates(current.x - 1, current.y)
         return when (pipeMap[leftCoord].sign) {
@@ -279,7 +277,7 @@ class StartPipe(
             else -> throw IllegalArgumentException("Wrong map provided")
         }
 
-        // start has two connections, three directions to check is enough
+        // start has two connections, three directions to check is enough to determine
     }
 
     fun checkIfRangePipe(pipeMap: PipeMap): Boolean {
