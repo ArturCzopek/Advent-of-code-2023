@@ -7,7 +7,7 @@ class Day11Test {
     @Test
     fun `should solve quiz`() {
         // given
-        val inputA = """
+        val input = """
             ...#......
             .......#..
             #.........
@@ -21,8 +21,8 @@ class Day11Test {
         """.trimIndent()
 
         // when
-        val resultA = Day11a.solve(inputA.lines())
-//        val resultB = Day11a.solve(inputA.lines())
+        val resultA = Day11a.solve(input.lines())
+        val resultB = Day11b.solve(input.lines())
 
         // then
         assert(374L == resultA)
