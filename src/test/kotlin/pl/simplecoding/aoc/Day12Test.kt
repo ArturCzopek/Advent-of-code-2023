@@ -18,10 +18,10 @@ class Day12Test {
 
         // when
         val resultA = Day12a.solve(input.lines())
-//        val resultB = Day12b.solve(input.lines())
+        val resultB = Day12b.solve(input.lines())
 
         // then
         assert(21L == resultA)
-//        assert(1030L == resultB)
+        assert(525152L == resultB)
     }
 }
