@@ -44,12 +44,11 @@ class Day13Test {
 
 
         // when
-//        val resultA1 = Day13a.solve(inputA1.lines())
+        val resultA1 = Day13a.solve(inputA1.lines())
         val resultA2 = Day13a.solve(inputA2.lines())
-//        val resultB1 = Day13b.solve(inputB1.lines())
 
         // then
-//        assert(405 == resultA1)
+        assert(405 == resultA1)
         assert(100 == resultA2)
     }
 }
